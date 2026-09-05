@@ -4,6 +4,7 @@ import Headers from "./MessageHeaders.vue";
 import HTMLCheck from "./HTMLCheck.vue";
 import LinkCheck from "./LinkCheck.vue";
 import SpamAssassin from "./SpamAssassin.vue";
+import SpamFilter from "./SpamFilter.vue";
 import Tags from "bootstrap5-tags";
 import { Tooltip } from "bootstrap";
 import commonMixins from "../../mixins/CommonMixins";
@@ -21,6 +22,7 @@ export default {
 		HTMLCheck,
 		LinkCheck,
 		SpamAssassin,
+		SpamFilter,
 	},
 
 	mixins: [commonMixins],
@@ -48,6 +50,8 @@ export default {
 			linkCheckErrors: false,
 			spamScore: false,
 			spamScoreColor: false,
+			spamFilterScore: false,
+			spamFilterScoreColor: false,
 			showMobileButtons: false,
 			showUnsubscribe: false,
 			scaleHTMLPreview: "display",
@@ -65,7 +69,8 @@ export default {
 			return (
 				(mailbox.showHTMLCheck && this.message.HTML) ||
 				mailbox.showLinkCheck ||
-				(mailbox.showSpamCheck && mailbox.uiConfig.SpamAssassin)
+				(mailbox.showSpamCheck && mailbox.uiConfig.SpamAssassin) ||
+				(mailbox.showSpamFilter && mailbox.uiConfig.SpamFilter)
 			);
 		},
 
@@ -700,6 +705,27 @@ export default {
 							</span>
 						</button>
 					</li>
+					<li v-if="mailbox.showSpamFilter && mailbox.uiConfig.SpamFilter">
+						<button
+							id="nav-spam-filter-tab"
+							class="dropdown-item"
+							data-bs-toggle="tab"
+							data-bs-target="#nav-spam-filter"
+							type="button"
+							role="tab"
+							aria-controls="nav-html"
+							aria-selected="false"
+						>
+							Spam Filter
+							<span
+								v-if="spamFilterScore !== false"
+								class="badge rounded-pill float-end"
+								:class="spamFilterScoreColor"
+							>
+								<small>{{ spamFilterScore }}</small>
+							</span>
+						</button>
+					</li>
 				</ul>
 			</div>
 			<button
@@ -749,6 +775,22 @@ export default {
 				Spam Analysis
 				<span v-if="spamScore !== false" class="badge rounded-pill" :class="spamScoreColor">
 					<small>{{ spamScore }}</small>
+				</span>
+			</button>
+			<button
+				v-if="mailbox.showSpamFilter && mailbox.uiConfig.SpamFilter"
+				id="nav-spam-filter-tab"
+				class="d-none d-xl-inline-block nav-link position-relative"
+				data-bs-toggle="tab"
+				data-bs-target="#nav-spam-filter"
+				type="button"
+				role="tab"
+				aria-controls="nav-html"
+				aria-selected="false"
+			>
+				Spam Filter
+				<span v-if="spamFilterScore !== false" class="badge rounded-pill" :class="spamFilterScoreColor">
+					<small>{{ spamFilterScore }}</small>
 				</span>
 			</button>
 
@@ -861,6 +903,20 @@ export default {
 					:message="message"
 					@set-spam-score="(n) => (spamScore = n)"
 					@set-badge-style="(v) => (spamScoreColor = v)"
+				/>
+			</div>
+			<div
+				v-if="mailbox.showSpamFilter && mailbox.uiConfig.SpamFilter"
+				id="nav-spam-filter"
+				class="tab-pane fade"
+				role="tabpanel"
+				aria-labelledby="nav-spam-filter-tab"
+				tabindex="0"
+			>
+				<SpamFilter
+					:message="message"
+					@set-spam-filter-score="(n) => (spamFilterScore = n)"
+					@set-badge-style="(v) => (spamFilterScoreColor = v)"
 				/>
 			</div>
 			<div

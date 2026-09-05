@@ -242,6 +242,20 @@ export default {
 									</label>
 								</div>
 							</div>
+							<div v-if="mailbox.uiConfig.SpamFilter" class="mb-3">
+								<div class="form-check form-switch">
+									<input
+										id="spamFilter"
+										v-model="mailbox.showSpamFilter"
+										class="form-check-input"
+										type="checkbox"
+										role="switch"
+									/>
+									<label class="form-check-label" for="spamFilter">
+										Show spam filter message tab
+									</label>
+								</div>
+							</div>
 							<div class="mb-3">
 								<div class="form-check form-switch">
 									<input

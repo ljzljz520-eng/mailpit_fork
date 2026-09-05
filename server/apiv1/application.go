@@ -7,6 +7,7 @@ import (
 
 	"github.com/axllent/mailpit/config"
 	"github.com/axllent/mailpit/internal/smtpd/chaos"
+	"github.com/axllent/mailpit/internal/spamfilter"
 	"github.com/axllent/mailpit/internal/stats"
 )
 
@@ -68,6 +69,7 @@ func WebUIConfig(w http.ResponseWriter, _ *http.Request) {
 	}
 
 	conf.Body.SpamAssassin = config.EnableSpamAssassin != ""
+	conf.Body.SpamFilter = spamfilter.Enabled
 	conf.Body.ChaosEnabled = chaos.Enabled
 	conf.Body.DuplicatesIgnored = config.IgnoreDuplicateIDs
 	conf.Body.HideDeleteAllButton = config.HideDeleteAllButton

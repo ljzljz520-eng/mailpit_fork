@@ -83,6 +83,9 @@ type WebUIConfiguration struct {
 	// Whether SpamAssassin is enabled
 	SpamAssassin bool
 
+	// Whether the built-in spam filter is enabled
+	SpamFilter bool
+
 	// Whether Chaos support is enabled at runtime
 	ChaosEnabled bool
 

@@ -20,6 +20,7 @@ import (
 	"github.com/axllent/mailpit/config"
 	"github.com/axllent/mailpit/internal/logger"
 	"github.com/axllent/mailpit/internal/shortuuid"
+	"github.com/axllent/mailpit/internal/spamfilter"
 	"github.com/axllent/mailpit/internal/tools"
 	"github.com/axllent/mailpit/server/webhook"
 	"github.com/axllent/mailpit/server/websockets"
@@ -153,6 +154,14 @@ func Store(body *[]byte, username *string) (string, error) {
 	// auto-tag by username if enabled
 	if config.TagsUsername && username != nil && *username != "" {
 		tags = append(tags, *username)
+	}
+
+	// built-in spam filter: tag messages reaching the spam score threshold
+	if spamfilter.Enabled {
+		if result := spamfilter.CheckEnvelope(env); result.IsSpam && spamfilter.Tag() != "" {
+			tags = append(tags, spamfilter.Tag())
+			logger.Log().Debugf("[spam-filter] message %s scored %.1f (threshold %.1f)", id, result.Score, result.Threshold)
+		}
 	}
 
 	// extract tags from search matches, and sort and extract unique tags

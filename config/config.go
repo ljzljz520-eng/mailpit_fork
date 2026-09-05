@@ -17,6 +17,7 @@ import (
 	"github.com/axllent/mailpit/internal/smtpd/chaos"
 	"github.com/axllent/mailpit/internal/snakeoil"
 	"github.com/axllent/mailpit/internal/spamassassin"
+	"github.com/axllent/mailpit/internal/spamfilter"
 	"github.com/axllent/mailpit/internal/tools"
 )
 
@@ -216,6 +217,13 @@ var (
 
 	// EnableSpamAssassin must be either <host>:<port> or "postmark"
 	EnableSpamAssassin string
+
+	// DisableSpamFilter turns off the built-in heuristic spam filter (default false)
+	DisableSpamFilter bool
+
+	// SpamFilterConfigFile is an optional YAML file with custom spam rules,
+	// threshold, tag, allow/block lists and disabled built-in rules
+	SpamFilterConfigFile string
 
 	// HideDeleteAllButton hides the delete all button in the web UI
 	HideDeleteAllButton bool
@@ -585,6 +593,18 @@ func VerifyConfig() error {
 		if err := spamassassin.Ping(); err != nil {
 			logger.Log().Warnf("[spamassassin] ping: %s", err.Error())
 		}
+	}
+
+	// built-in spam filter (enabled by default)
+	if !DisableSpamFilter {
+		if err := spamfilter.LoadConfig(SpamFilterConfigFile); err != nil {
+			return err
+		}
+		builtIn, custom := spamfilter.RuleCounts()
+		logger.Log().Infof("[spam-filter] enabled: %d built-in rules, %d custom rules, threshold %.1f", builtIn, custom, spamfilter.Threshold())
+	} else {
+		spamfilter.Enabled = false
+		logger.Log().Info("[spam-filter] disabled")
 	}
 
 	// load tag filters & options

@@ -10,6 +10,7 @@ import (
 	"github.com/axllent/mailpit/internal/htmlcheck"
 	"github.com/axllent/mailpit/internal/linkcheck"
 	"github.com/axllent/mailpit/internal/spamassassin"
+	"github.com/axllent/mailpit/internal/spamfilter"
 	"github.com/axllent/mailpit/internal/storage"
 	"github.com/jhillyerd/enmime/v2"
 )
@@ -174,6 +175,57 @@ func SpamAssassinCheck(w http.ResponseWriter, r *http.Request) {
 	}
 
 	summary, err := spamassassin.Check(msg)
+	if err != nil {
+		httpError(w, err.Error())
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(summary); err != nil {
+		httpError(w, err.Error())
+	}
+}
+
+// SpamFilterCheck returns the built-in spam filter result for a message
+func SpamFilterCheck(w http.ResponseWriter, r *http.Request) {
+	// swagger:route GET /api/v1/message/{ID}/spam-check other SpamFilterCheckParams
+	//
+	// # Spam filter check
+	//
+	// Runs the built-in heuristic spam filter against the message and returns
+	// the score and triggered rules.
+	//
+	// The ID can be set to `latest` to return the latest message.
+	//
+	//	Produces:
+	//	  - application/json
+	//
+	//	Schemes: http, https
+	//
+	//	Responses:
+	//	  200: SpamFilterResponse
+	//    400: ErrorResponse
+	//    404: NotFoundResponse
+
+	id := r.PathValue("id")
+
+	if id == "latest" {
+		var err error
+		id, err = storage.LatestID(r)
+		if err != nil {
+			w.WriteHeader(404)
+			_, _ = fmt.Fprint(w, err.Error())
+			return
+		}
+	}
+
+	msg, err := storage.GetMessageRaw(id)
+	if err != nil {
+		fourOFour(w)
+		return
+	}
+
+	summary, err := spamfilter.Check(msg)
 	if err != nil {
 		httpError(w, err.Error())
 		return

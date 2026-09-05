@@ -25,6 +25,7 @@ import (
 	"github.com/axllent/mailpit/internal/prometheus"
 	"github.com/axllent/mailpit/internal/shortuuid"
 	"github.com/axllent/mailpit/internal/snakeoil"
+	"github.com/axllent/mailpit/internal/spamfilter"
 	"github.com/axllent/mailpit/internal/stats"
 	"github.com/axllent/mailpit/internal/storage"
 	"github.com/axllent/mailpit/internal/tools"
@@ -237,6 +238,9 @@ func apiRoutes() *http.ServeMux {
 	r.HandleFunc("GET "+config.Webroot+"api/v1/message/{id}/link-check", middleWareFunc(apiv1.LinkCheck))
 	if config.EnableSpamAssassin != "" {
 		r.HandleFunc("GET "+config.Webroot+"api/v1/message/{id}/sa-check", middleWareFunc(apiv1.SpamAssassinCheck))
+	}
+	if spamfilter.Enabled {
+		r.HandleFunc("GET "+config.Webroot+"api/v1/message/{id}/spam-check", middleWareFunc(apiv1.SpamFilterCheck))
 	}
 	r.HandleFunc("GET "+config.Webroot+"api/v1/message/{id}", middleWareFunc(apiv1.GetMessage))
 	r.HandleFunc("GET "+config.Webroot+"api/v1/info", middleWareFunc(apiv1.AppInfo))

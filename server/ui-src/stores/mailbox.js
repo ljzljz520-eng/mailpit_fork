@@ -42,6 +42,7 @@ export const mailbox = reactive({
 	showHTMLCheck: !localStorage.getItem("mp-hide-html-check"),
 	showLinkCheck: !localStorage.getItem("mp-hide-link-check"),
 	showSpamCheck: !localStorage.getItem("mp-hide-spam-check"),
+	showSpamFilter: !localStorage.getItem("mp-hide-spam-filter"),
 	timeZone: localStorage.getItem("mp-time-zone")
 		? localStorage.getItem("mp-time-zone")
 		: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -95,6 +96,17 @@ watch(
 			localStorage.removeItem("mp-hide-spam-check");
 		} else {
 			localStorage.setItem("mp-hide-spam-check", "true");
+		}
+	},
+);
+
+watch(
+	() => mailbox.showSpamFilter,
+	(v) => {
+		if (v) {
+			localStorage.removeItem("mp-hide-spam-filter");
+		} else {
+			localStorage.setItem("mp-hide-spam-filter", "true");
 		}
 	},
 );

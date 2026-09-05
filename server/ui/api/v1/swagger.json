@@ -1241,6 +1241,46 @@
           }
         }
       }
+    },
+    "/api/v1/message/{ID}/spam-check": {
+      "get": {
+        "description": "Runs the built-in heuristic spam filter against the message and returns\nthe score and triggered rules.\n\nThe ID can be set to `latest` to return the latest message.",
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "tags": [
+          "other"
+        ],
+        "summary": "Spam filter check",
+        "operationId": "SpamFilterCheckParams",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Message database ID or \"latest\"",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SpamFilterResponse",
+            "schema": {
+              "$ref": "#/definitions/SpamFilterResponse"
+            }
+          },
+          "400": {
+            "$ref": "#/responses/ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/NotFoundResponse"
+          }
+        }
+      }
     }
   },
   "definitions": {
@@ -2013,9 +2053,67 @@
         "SpamAssassin": {
           "description": "Whether SpamAssassin is enabled",
           "type": "boolean"
+        },
+        "SpamFilter": {
+          "description": "Whether the built-in spam filter is enabled",
+          "type": "boolean"
         }
       },
       "x-go-package": "github.com/axllent/mailpit/server/apiv1"
+    },
+    "SpamFilterRule": {
+      "description": "Rule struct",
+      "type": "object",
+      "properties": {
+        "Builtin": {
+          "description": "Whether the rule is a built-in (preset) rule",
+          "type": "boolean"
+        },
+        "Description": {
+          "description": "Rule description",
+          "type": "string"
+        },
+        "Name": {
+          "description": "Rule name / ID",
+          "type": "string"
+        },
+        "Score": {
+          "description": "Rule score (negative scores reduce the total)",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "x-go-name": "Rule",
+      "x-go-package": "github.com/axllent/mailpit/internal/spamfilter"
+    },
+    "SpamFilterResponse": {
+      "description": "Result is a spam filter result",
+      "type": "object",
+      "properties": {
+        "IsSpam": {
+          "description": "Whether the message is spam or not (Score \u003e= Threshold)",
+          "type": "boolean"
+        },
+        "Rules": {
+          "description": "Spam rules triggered",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SpamFilterRule"
+          }
+        },
+        "Score": {
+          "description": "Total spam score based on triggered rules",
+          "type": "number",
+          "format": "double"
+        },
+        "Threshold": {
+          "description": "Score at which a message is considered spam",
+          "type": "number",
+          "format": "double"
+        }
+      },
+      "x-go-name": "Result",
+      "x-go-package": "github.com/axllent/mailpit/internal/spamfilter"
     }
   },
   "responses": {
